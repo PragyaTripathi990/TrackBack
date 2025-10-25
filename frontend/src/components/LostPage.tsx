@@ -107,7 +107,15 @@ const LostPage: React.FC<LostPageProps> = ({ onBack }) => {
 
     } catch (err: any) {
       console.error('Error submitting item:', err);
-      setError(err.response?.data?.error || 'Failed to submit item. Please try again.');
+      
+      // Check if it's a network error (backend not available)
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error' || !err.response) {
+        setError('⚠️ Backend server is not available. Please make sure the backend is running or deployed.');
+      } else if (err.response?.status === 0 || err.code === 'ECONNREFUSED') {
+        setError('⚠️ Cannot connect to backend. The server might be offline.');
+      } else {
+        setError(err.response?.data?.error || 'Failed to submit item. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
       setIsUploading(false);
